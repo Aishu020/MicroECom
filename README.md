@@ -2,8 +2,7 @@
 
 Production-style, dockerized microservices E-Commerce system with an API Gateway, JWT auth, and a React + MUI frontend.
 
-**Architecture Diagram**
-→ Client (React + MUI)
+Client (React + MUI)
 → API Gateway (Express)
 → Auth Service (MongoDB)
 → Product Service (MongoDB)
