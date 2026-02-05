@@ -1,0 +1,118 @@
+version: "3.9"
+
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - JWT_SECRET=supersecret
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - PRODUCT_SERVICE_URL=http://product-service:4002
+      - ORDER_SERVICE_URL=http://order-service:4003
+      - PAYMENT_SERVICE_URL=http://payment-service:4004
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+      - payment-service
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - MONGO_URI=mongodb://auth-mongo:27017
+      - MONGO_DB=microecom_auth
+      - JWT_SECRET=supersecret
+      - ADMIN_REGISTRATION_KEY=admin_secret_key
+    depends_on:
+      - auth-mongo
+
+  product-service:
+    build: ./services/product-service
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+      - MONGO_URI=mongodb://product-mongo:27017
+      - MONGO_DB=microecom_product
+      - JWT_SECRET=supersecret
+      - SERVICE_KEY=service_shared_key
+    depends_on:
+      - product-mongo
+
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "4003:4003"
+    environment:
+      - PORT=4003
+      - MONGO_URI=mongodb://order-mongo:27017
+      - MONGO_DB=microecom_order
+      - JWT_SECRET=supersecret
+      - PRODUCT_SERVICE_URL=http://product-service:4002
+      - PAYMENT_SERVICE_URL=http://payment-service:4004
+      - SERVICE_KEY=service_shared_key
+    depends_on:
+      - order-mongo
+      - product-service
+      - payment-service
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "4004:4004"
+    environment:
+      - PORT=4004
+      - MONGO_URI=mongodb://payment-mongo:27017
+      - MONGO_DB=microecom_payment
+      - JWT_SECRET=supersecret
+    depends_on:
+      - payment-mongo
+
+  client:
+    build:
+      context: ./client
+      args:
+        - REACT_APP_API_BASE=http://localhost:8080/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+
+  auth-mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - auth-db:/data/db
+
+  product-mongo:
+    image: mongo:6
+    ports:
+      - "27018:27017"
+    volumes:
+      - product-db:/data/db
+
+  order-mongo:
+    image: mongo:6
+    ports:
+      - "27019:27017"
+    volumes:
+      - order-db:/data/db
+
+  payment-mongo:
+    image: mongo:6
+    ports:
+      - "27020:27017"
+    volumes:
+      - payment-db:/data/db
+
+volumes:
+  auth-db:
+  product-db:
+  order-db:
+  payment-db:
