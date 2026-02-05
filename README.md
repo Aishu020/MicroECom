@@ -1,2 +1,2 @@
-# MicroMart
+# MicroECom
 Microservice-based E-Commerce
